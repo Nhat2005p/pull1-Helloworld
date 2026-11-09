@@ -1,0 +1,51 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from './../src/app.module';
+
+describe('AppController (e2e)', () => {
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/ (GET) - Overview', () => {
+    return request(app.getHttpServer())
+      .get('/')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.name).toBeDefined();
+        expect(res.body.roadmap).toBeDefined();
+      });
+  });
+
+  it('/hello (GET) - i18n English default', () => {
+    return request(app.getHttpServer())
+      .get('/hello')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.message).toBe('Hello World!');
+        expect(res.body.currentLanguage).toBe('en');
+      });
+  });
+
+  it('/hello?lang=vi (GET) - i18n Vietnamese', () => {
+    return request(app.getHttpServer())
+      .get('/hello?lang=vi')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.message).toBe('Xin chào thế giới!');
+        expect(res.body.currentLanguage).toBe('vi');
+      });
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+});
